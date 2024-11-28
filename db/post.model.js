@@ -11,4 +11,11 @@ const PostSchema = Schema(
   }
 );
 
+PostSchema.pre("find", function (next) {
+  // this = query
+  this.populate("user", "username");
+  console.log("in middleware");
+  next();
+});
+
 module.exports = model("posts", PostSchema);

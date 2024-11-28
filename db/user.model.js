@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const moment = require("moment");
 
 const UserSchema = mongoose.Schema(
   {
@@ -45,7 +46,21 @@ const UserSchema = mongoose.Schema(
     },
     birthdate: Date,
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true } }
 );
+
+UserSchema.virtual("age").get(function () {
+  // this = document
+  if (!this.birthdate) return;
+  return moment().diff(this.birthdate, "years");
+});
+
+UserSchema.post("deleteOne", async function () {
+  // this = query
+  console.log(this);
+  const filter = this.getFilter();
+  await mongoose.model("posts").deleteMany({ user: filter._id });
+  await mongoose.model("comments").deleteMany({ user: filter._id });
+});
 
 module.exports = mongoose.model("users", UserSchema);
